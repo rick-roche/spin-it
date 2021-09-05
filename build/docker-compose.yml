@@ -1,0 +1,24 @@
+version: '3'
+services:
+  spin_it:
+    container_name: spin-it-dev
+    build:
+      context: ../
+      dockerfile: build/Dockerfile.dev
+      args:
+        GO_VERSION: 1.16
+    environment: 
+      - SPOTIFY_ID=${SPOTIFY_ID}
+      - SPOTIFY_SECRET=${SPOTIFY_SECRET}
+      - LASTFM_API_KEY=${LASTFM_API_KEY}
+      - LASTFM_API_SECRET=${LASTFM_API_SECRET}
+    entrypoint: air
+    restart: on-failure
+    ports:
+      - 8080:8080
+    volumes:
+      - ../:/home/go/apps
+      # - ./configs:/home/go/configs
+    tmpfs:
+      - /tmp
+    read_only: false
