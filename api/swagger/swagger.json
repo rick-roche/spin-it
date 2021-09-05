@@ -1,0 +1,480 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Documentation of the Spin-It API.",
+    "title": "Spin-It API",
+    "contact": {
+      "name": "Rick Roche",
+      "url": "https://www.rickroche.com",
+      "email": "a@b.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    },
+    "version": "0.0.1"
+  },
+  "basePath": "/",
+  "paths": {
+    "/health": {
+      "get": {
+        "description": "Returns the status of the API using the configured health checks",
+        "tags": [
+          "health"
+        ],
+        "summary": "Gets health of the API",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Health response",
+            "schema": {
+              "$ref": "#/definitions/HealthResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth": {
+      "get": {
+        "description": "Authenticate with Spotify using your account",
+        "summary": "Initiates the OAuth2 flow",
+        "operationId": "authenticate",
+        "responses": {
+          "200": {
+            "description": "Auth response",
+            "schema": {
+              "$ref": "#/definitions/AuthResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/match": {
+      "get": {
+        "description": "Match songs from your favourite sources to tracks on Spotify",
+        "summary": "Match songs from last.fm or Discogs to Spotify",
+        "operationId": "match",
+        "parameters": [
+          {
+            "enum": [
+              "lastfm",
+              "discogs"
+            ],
+            "type": "string",
+            "description": "source to match against. e.g. lastfm",
+            "name": "source",
+            "in": "query",
+            "required": true
+          },
+          {
+            "enum": [
+              "chart",
+              "top-tracks"
+            ],
+            "type": "string",
+            "description": "type of match. e.g. chart",
+            "name": "type",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "user to use on the source platform. e.g. your last.fm username",
+            "name": "user",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "format": "date",
+            "description": "from date",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "format": "date",
+            "description": "to date",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "overall",
+              "7day",
+              "1month",
+              "3month",
+              "6month",
+              "12month"
+            ],
+            "type": "string",
+            "description": "Period enum. e.g. overall",
+            "name": "period",
+            "in": "query"
+          },
+          {
+            "type": "number",
+            "description": "The number of results to fetch per page",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Match response",
+            "schema": {
+              "$ref": "#/definitions/MatchResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/playlists": {
+      "post": {
+        "description": "Create a new playlist on Spotify using the matched tracks from the match endpoint",
+        "summary": "Create a playlist on Spotify using the matched tracks",
+        "operationId": "playlists",
+        "parameters": [
+          {
+            "description": "The playlist to be created",
+            "name": "createPlaylist",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreatePlaylistRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Match response",
+            "schema": {
+              "$ref": "#/definitions/CreatePlaylistResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Album": {
+      "type": "object",
+      "title": "Album ...",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        }
+      },
+      "x-go-package": "spin-it/internal/models"
+    },
+    "Artist": {
+      "type": "object",
+      "title": "Artist ...",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        }
+      },
+      "x-go-package": "spin-it/internal/models"
+    },
+    "AuthResponse": {
+      "description": "Auth response with token",
+      "type": "object",
+      "properties": {
+        "token": {
+          "$ref": "#/definitions/Token"
+        }
+      },
+      "x-go-name": "authResponse",
+      "x-go-package": "spin-it/api"
+    },
+    "CreatePlaylistRequest": {
+      "description": "Create a new playlist",
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "name": {
+          "description": "in: body",
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "public": {
+          "type": "boolean",
+          "x-go-name": "Public"
+        },
+        "tracks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Track"
+          },
+          "x-go-name": "Tracks"
+        }
+      },
+      "x-go-package": "spin-it/api"
+    },
+    "CreatePlaylistResponse": {
+      "description": "Create a new playlist response",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "public": {
+          "type": "boolean",
+          "x-go-name": "IsPublic"
+        },
+        "totalTracks": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TotalTracks"
+        }
+      },
+      "x-go-package": "spin-it/api"
+    },
+    "FoundTracks": {
+      "type": "object",
+      "title": "FoundTracks ...",
+      "properties": {
+        "matched": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Track"
+          },
+          "x-go-name": "Matched"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Total"
+        },
+        "totalMatched": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TotalMatched"
+        },
+        "totalUnmatched": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TotalUnmatched"
+        },
+        "unmatched": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Track"
+          },
+          "x-go-name": "Unmatched"
+        }
+      },
+      "x-go-package": "spin-it/internal/models"
+    },
+    "HealthResponse": {
+      "description": "Health check",
+      "type": "object",
+      "required": [
+        "status",
+        "version"
+      ],
+      "properties": {
+        "releaseId": {
+          "type": "string",
+          "x-go-name": "ReleaseID"
+        },
+        "status": {
+          "$ref": "#/definitions/Status"
+        },
+        "version": {
+          "type": "string",
+          "x-go-name": "Version"
+        }
+      },
+      "x-go-name": "healthResponse",
+      "x-go-package": "spin-it/api"
+    },
+    "MatchResponse": {
+      "description": "Match response with found tracks",
+      "type": "object",
+      "properties": {
+        "matched": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Track"
+          },
+          "x-go-name": "Matched"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Total"
+        },
+        "totalMatched": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TotalMatched"
+        },
+        "totalUnmatched": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TotalUnmatched"
+        },
+        "unmatched": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Track"
+          },
+          "x-go-name": "Unmatched"
+        }
+      },
+      "x-go-package": "spin-it/api"
+    },
+    "Playlist": {
+      "type": "object",
+      "title": "Playlist ...",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "public": {
+          "type": "boolean",
+          "x-go-name": "IsPublic"
+        },
+        "totalTracks": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TotalTracks"
+        }
+      },
+      "x-go-package": "spin-it/internal/models"
+    },
+    "Status": {
+      "description": "Possible values are pass, warn, and fail.",
+      "type": "string",
+      "title": "Status represents a health status.",
+      "x-go-package": "github.com/nelkinda/health-go"
+    },
+    "Token": {
+      "description": "Most users of this package should not access fields of Token\ndirectly. They're exported mostly for use by related packages\nimplementing derivative OAuth2 flows.",
+      "type": "object",
+      "title": "Token represents the credentials used to authorize\nthe requests to access protected resources on the OAuth 2.0\nprovider's backend.",
+      "properties": {
+        "access_token": {
+          "description": "AccessToken is the token that authorizes and authenticates\nthe requests.",
+          "type": "string",
+          "x-go-name": "AccessToken"
+        },
+        "expiry": {
+          "description": "Expiry is the optional expiration time of the access token.\n\nIf zero, TokenSource implementations will reuse the same\ntoken forever and RefreshToken or equivalent\nmechanisms for that TokenSource will not be used.",
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "Expiry"
+        },
+        "refresh_token": {
+          "description": "RefreshToken is a token that's used by the application\n(as opposed to the user) to refresh the access token\nif it expires.",
+          "type": "string",
+          "x-go-name": "RefreshToken"
+        },
+        "token_type": {
+          "description": "TokenType is the type of token.\nThe Type method returns either this or \"Bearer\", the default.",
+          "type": "string",
+          "x-go-name": "TokenType"
+        }
+      },
+      "x-go-package": "golang.org/x/oauth2"
+    },
+    "Track": {
+      "type": "object",
+      "title": "Track ...",
+      "properties": {
+        "album": {
+          "$ref": "#/definitions/Album"
+        },
+        "artists": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Artist"
+          },
+          "x-go-name": "Artists"
+        },
+        "confidence": {
+          "type": "string",
+          "x-go-name": "Confidence"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "playcount": {
+          "type": "string",
+          "x-go-name": "PlayCount"
+        },
+        "rank": {
+          "type": "string",
+          "x-go-name": "Rank"
+        },
+        "searchedFor": {
+          "type": "string",
+          "x-go-name": "SearchedFor"
+        }
+      },
+      "x-go-package": "spin-it/internal/models"
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "KEY",
+      "in": "header"
+    },
+    "oauth2": {
+      "type": "oauth2",
+      "in": "header",
+      "flow": "accessCode",
+      "authorizationUrl": "/oauth2/auth",
+      "tokenUrl": "/oauth2/token",
+      "scopes": {
+        "bar": "foo"
+      }
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ]
+}

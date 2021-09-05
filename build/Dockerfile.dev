@@ -1,0 +1,22 @@
+ARG GO_VERSION
+FROM golang:$GO_VERSION
+
+RUN apt-get -yqq update && \
+    apt-get -yqq install --no-install-recommends ca-certificates && \
+    update-ca-certificates -f && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd -g 1000 go && \
+    useradd -m -u 1000 -g 1000 go && \
+    chown -R go:go /go && \
+    mkdir -p /home/go/apps && \
+    chown -R go:go /home/go
+
+# install air: https://github.com/cosmtrek/air
+RUN curl --fail -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s
+# install go-swagger: https://github.com/go-swagger/go-swagger
+COPY --from=quay.io/goswagger/swagger:latest /usr/bin/swagger /usr/bin/swagger
+
+WORKDIR /home/go/apps
+COPY --chown=go:go go.mod go.sum ./
+RUN go mod download
